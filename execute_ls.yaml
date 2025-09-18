@@ -1,6 +1,6 @@
 ---
-- name: List disrectory content
+- name: execute date on hosts
   hosts: all
   tasks:
-    - name: execute ls
-      ansible.builtin.command: ls
+    - name: execute date
+      ansible.builtin.command: date
