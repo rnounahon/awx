@@ -1,0 +1,6 @@
+---
+- name: List disrectory content
+  hosts: all
+  tasks:
+    - name: execute ls
+      ansible.builtin.command: ls
