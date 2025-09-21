@@ -1,0 +1,7 @@
+---
+all:
+  hosts:
+    debian-host:
+      ansible_host: 172.28.129.67
+    centos-host:
+      ansible_host: 172.28.139.108
