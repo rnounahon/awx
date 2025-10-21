@@ -1,0 +1,26 @@
+---
+- name: this plabook patch my server
+  hosts: '{{ hostname | default("localhost") }}'
+  tasks:
+    - name: check if yum utils is installed
+      ansible.builtin.yum:
+        - name: "yum-utils"
+          state: latest
+
+    - name: update package
+      ansible.builtin.yum:
+        name: "*"
+        state: latest
+
+    - name: see if need restart
+      ansible.builtin.sheel: "need-restarting -r > /dev/null ; echo $?"
+      register: needrestarting
+
+    - name: show the needrestarting
+      ansible.builtin.debug:
+        var: needrestaring
+
+    - name: reboot the server
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+      when: needrestarting.stdout == "1"
