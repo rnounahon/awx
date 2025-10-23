@@ -1,6 +1,7 @@
 ---
 - name: this plabook patch my server
   hosts: '{{ hostname | default("localhost") }}'
+  become: true
   tasks:
     - name: check if yum utils is installed
       ansible.builtin.yum:
