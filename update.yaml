@@ -13,7 +13,7 @@
         state: latest
 
     - name: see if need restart
-      ansible.builtin.sheel: "need-restarting -r > /dev/null ; echo $?"
+      ansible.builtin.shell: "need-restarting -r > /dev/null ; echo $?"
       register: needrestarting
 
     - name: show the needrestarting
