@@ -4,8 +4,8 @@
   tasks:
     - name: check if yum utils is installed
       ansible.builtin.yum:
-        - name: "yum-utils"
-          state: latest
+        name: "yum-utils"
+        state: latest
 
     - name: update package
       ansible.builtin.yum:
