@@ -19,7 +19,7 @@
 
     - name: show the needrestarting
       ansible.builtin.debug:
-        var: needrestaring
+        var: needrestarting
 
     - name: reboot the server
       ansible.builtin.reboot:
