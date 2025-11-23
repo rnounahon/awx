@@ -1,0 +1,14 @@
+---
+- name: Lets schedule a task
+  hosts: all
+  tasks:
+    - name: cronjob
+      ansible.builtin.cron:
+        name: "test"
+        state: present
+        minute: "*/2"
+        hour: "*"
+        day: "*"
+        month: "*"
+        weekday: "*"
+        job: 'logger "ansible-pilot"'

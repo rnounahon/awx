@@ -1,0 +1,13 @@
+---
+- name: test cmd on ansible
+  hosts: all
+  tasks:
+    - name: run a command to check uptime
+      ansible.builtin.command: uptime
+      register: command_output
+
+    - name: print the output
+      ansible.builtin.debug:
+        var: command_output.stdout_lines
+
+

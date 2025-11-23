@@ -1,0 +1,32 @@
+---
+- name: mount nfs
+  hosts: all
+  become: true
+  vars:
+    uri: "//lpt-ronald/Partage_Linux"
+    username: "rnounahon"
+    password: "F!f@me2014"
+    mountpoint: "/share"
+  vars_files:
+    - vault.yml
+  tasks:
+    - name: check if nfsutils is installed
+      ansible.builtin.package:
+        name: cifs-utils
+        state: present
+
+    - name: check if mount point exist
+      ansible.builtin.file:
+        path: "{{ mountpoint }}"
+        state: directory
+        mode: '0775'
+        owner: root
+        group: root
+
+    - name: mount the network share
+      ansible.posix.mount:
+        src: "{{ uri }}"
+        path: "{{ mountpoint }}"
+        fstype: cifs
+        opts: 'username={{ username }},password={{ password }}'
+        state: mounted

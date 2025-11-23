@@ -1,0 +1,23 @@
+---
+- name: check my git repo
+  hosts: all
+  become: true
+  vars_files:
+    - vault.yml
+  tasks:
+    - name: Lets install git package on Debian
+      ansible.builtin.apt:
+        name: git
+        state: present
+      when: ansible_facts['distribution'] == "Debian"
+        
+    - name: Lets install git package on centos
+      ansible.builtin.dnf:
+        name: git
+        state: present
+      when: ansible_facts['distribution'] == "centos"
+
+    - name: lets try on my repository
+      ansible.builtin.git:
+        repo: https://github.com/rnounahon/awx.git
+        dest: /home/rnounahon/awx

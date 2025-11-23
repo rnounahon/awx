@@ -1,0 +1,22 @@
+---
+- name: Create User
+  hosts: all
+  become: true
+  vars_files:
+    - vault.yml
+  tasks:
+    - name: lets create user on our machine 
+      ansible.builtin.user:
+        name: yadeleye
+        password: "{{ 'password' | password_hash('sha512', 'mysecretsalt') }}"
+        groups:
+          - wheel
+          - adm
+        state: "present"
+        shell: "/bin/bash"
+        system: false
+        create_home: true
+        home: "/home/yadeleye"
+        comment: "Ansible example"
+        generate_ssh_key: true
+

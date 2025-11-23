@@ -1,0 +1,28 @@
+---
+- name: template demo
+  hosts: all
+  become: true
+  vars:
+    page_title: "placeholder"
+    page_description: |
+      This is my placeholder page example.
+      Multiline is possible ;-)
+  vars_files:
+    - vault.yml  
+  tasks:
+    - name: install Nginx on Debian
+      ansible.builtin.apt:
+        name: nginx
+        state: latest
+      when: ansible_facts['distribution'] == "Debian"
+
+    - name: Install Nginx on Centos
+      ansible.builtin.dnf:
+        name: nginx
+        state: latest
+      when: ansible_facts['distribution'] == "CentOS"
+
+    - name: apply page template
+      ansible.builtin.template:
+        src: templates/placeholder.html.j2
+        dest: /var/www/html/index.html

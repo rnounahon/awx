@@ -1,0 +1,22 @@
+---
+# tasks file for mountfs
+- name: check if nfsutils is installed
+  ansible.builtin.package:
+    name: cifs-utils
+    state: present
+
+- name: check if mount point exist
+  ansible.builtin.file:
+    path: "{{ mountpoint }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+
+- name: mount the network share
+  ansible.posix.mount:
+    src: "{{ uri }}"
+    path: "{{ mountpoint }}"
+    fstype: nfs
+    opts: rw,sync,hard
+    state: mounted

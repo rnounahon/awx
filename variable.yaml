@@ -1,0 +1,40 @@
+---
+- name: lets test some variables
+  hosts: all
+  vars:
+    is_enable: false
+    fruits:
+      - apple
+      - mangoes
+      - pinepale
+    fruits_prices:
+      apple: 0.5
+      mangoes: 1
+      pinepale: 2
+  tasks:
+    - name: lets show the varible
+      ansible.builtin.debug:
+        var: is_enable
+
+    - name: show the message when value is true
+      ansible.builtin.debug:
+        msg: "the value of is enable is true"
+      when: is_enable
+
+    - name: show the list values
+      ansible.builtin.debug:
+        var: fruits
+
+    - name: show the dictionary variables
+      ansible.builtin.debug:
+        var: fruits_prices
+
+    - name: show fruits price
+      ansible.builtin.command: echo "{{ fruits_prices['apple'] }}"
+      register: priceof_fruits
+
+    - name: show 
+      ansible.builtin.debug:
+        var: priceof_fruits.stdout
+        
+

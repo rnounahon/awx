@@ -1,0 +1,13 @@
+---
+- name: edit file 
+  hosts: all
+  become: true
+  vars_files:
+    - vault.yml
+  tasks:
+    - name: change line in the file
+      ansible.builtin.lineinfile:
+        state: absent
+        dest: /etc/ssh/sshd_config
+        line: PasswordAuthentication  no
+        validate: 'sshd -t -f %s'

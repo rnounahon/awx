@@ -1,0 +1,16 @@
+---
+- name: Lets interact with web services
+  hosts: all
+  vars:
+    server: "http://172.28.139.63/"
+  tasks: 
+    - name: list users
+      ansible.builtin.uri:
+        url: "{{ server }}"
+        status-code: 200
+      register: result
+
+    - name: debug
+      ansible.builtin.debug:
+        var: result.json.data
+             

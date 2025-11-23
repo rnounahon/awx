@@ -1,0 +1,12 @@
+---
+- name: print message
+  hosts: all
+  ansible_become_method: sudo
+  vars:
+    fruit: "apple"  
+  vars_files:
+    - vault.yaml    
+  tasks:
+    - name: print a message on screen
+      ansible.builtin.debug:
+        var: fruit

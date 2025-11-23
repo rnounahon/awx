@@ -1,0 +1,36 @@
+---
+- name: Install nfs server
+  ansible.builtin.yum:
+    name:
+      - nfs-utils
+      - nfs4-acl-tools
+    state: present
+
+- name: Check if Share directory exists
+  ansible.builtin.file:
+    path: "{{ share }}"
+    state: directory
+    mode: "{{ permission }}"     
+    owner: root
+    group: root
+
+- name: share in /etc/exports file
+  ansible.builtin.lineinfile:
+    path: "/etc/exports"
+    state: present
+    line: '{{ share }} {{ options }}'
+    notify: Restart NFS server
+
+- name: export the share
+  ansible.builtin.command: "exportfs -avr"    
+
+- name: enable firewall 
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    state: enabled
+    permanent: true
+    immediate: true
+  with_items:
+    - nfs
+    - rpc-bind
+    - mountd 

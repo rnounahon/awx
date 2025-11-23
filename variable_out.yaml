@@ -1,0 +1,14 @@
+---
+- name: lets try var output
+  hosts: all
+  tasks:
+    - name: show hosts content
+      ansible.builtin.command: cat /etc/hosts
+      register: sortie
+
+
+    - name: 
+      ansible.builtin.debug:
+        var: sortie
+
+

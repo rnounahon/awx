@@ -1,0 +1,33 @@
+---
+- name: create user
+  hosts: linux
+  tasks:
+    - name: Create user
+      ansible.builtin.user:
+        name: "{{ item }}"
+        state: present 
+      with_items:
+        - nanais
+        - nlois
+        - neunice
+
+    - name: Create folder for the user
+      ansible.builtin.file:
+        name: "/home/{{ item.0 }}/{{ item.1 }}"
+        state: directory
+        owner: "{{ item.0 }}"
+        group: "{{ item.0 }}"
+      with_nested:
+        - [nanais, nlois, neunice]
+        - [ bureau, documents, telechargements]
+
+    - name: Create authorized_key
+      ansible.posix.authorized_key:
+        user: "{{ item }}"
+        key: file:///home/rnounahon/.ssh/id_rsa.pub
+        state: present
+      with_items:
+        - nanais
+        - nlois
+        - neunice
+

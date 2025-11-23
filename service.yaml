@@ -1,0 +1,21 @@
+---
+- name: restart service and enable firewall
+  hosts: all
+  become: true
+  vars_files:
+    - vault.yml
+  tasks:
+    - name: lets restart the service nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+        enabled: true
+
+    - name: now lets open firewall port
+      ansible.posix.firewalld:
+        service: http
+        state: enabled
+        permanent: true
+        immediate: true
+
+

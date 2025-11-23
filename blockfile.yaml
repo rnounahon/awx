@@ -1,0 +1,13 @@
+---
+- name: add block to a file
+  hosts: all
+  become: true
+  vars_files:
+    - vault.yml
+  tasks:
+    - name: lets add a block in the file
+      ansible.builtin.blockinfile:
+        state: present
+        dest: /etc/hosts
+        content: |
+          {{ ansible_facts['default_ipv4']['address'] }} {{ ansible_facts['hostname'] }}

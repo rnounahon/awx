@@ -1,0 +1,5 @@
+---
+- name: nfs server roles
+  hosts: '{{ nfs_client | default("localhost") }}'
+  roles:
+    - mountfs

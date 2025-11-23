@@ -1,0 +1,14 @@
+---
+- name: template demo 2
+  hosts: all
+  become: true
+  vars_files: 
+    - vault.yml
+  tasks:
+    - name: generate hosts file
+      ansible.builtin.template:
+        src: templates/hosts.j2
+        dest: /etc/hostsexample
+        owner: root
+        group: root
+        mode: '0644'
