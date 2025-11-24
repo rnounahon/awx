@@ -4,4 +4,4 @@ all:
     debian-host:
       ansible_host: 172.19.165.78
     centos-host:
-      ansible_host: 172.21.25.39
+      ansible_host: 172.19.163.51
