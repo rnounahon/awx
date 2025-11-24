@@ -1,5 +1,5 @@
 ---
 # vars file for nfsserver
 share: "{{ partage_doc }}"
-options: '{{ option_share | default("172.26.0.0/20(rw,sync,root_squash)" }}'
+options: "{{ option_share | default(172.26.0.0/20(rw,sync,root_squash)) }}"
 permission: '{{ perms | default("0777") }}'
