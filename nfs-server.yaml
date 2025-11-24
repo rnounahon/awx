@@ -1,5 +1,6 @@
 ---
 - name: nfs server roles
   hosts: '{{ nfs_server | default("localhost") }}'
+  become: true
   roles:
     - nfsserver
