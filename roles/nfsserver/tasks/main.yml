@@ -19,7 +19,7 @@
     path: "/etc/exports"
     state: present
     line: '{{ share }} {{ options }}'
-    notify: Restart NFS server
+  notify: Restart NFS server
 
 - name: export the share
   ansible.builtin.command: "exportfs -avr"    
