@@ -1,5 +1,6 @@
 awx-client1.example.com ansible_host=172.19.222.101
 awx-client2.example.com ansible_host=172.19.218.149
+awx-client3.example.com ansible_host=172.25.138.129
 
 [debian]
 awx-client1.example.com
@@ -7,6 +8,10 @@ awx-client1.example.com
 [centos]
 awx-client2.example.com
 
+[redhat]
+awx-client3.example.com
+
 [linux:children]
 debian
 centos
+redhat
