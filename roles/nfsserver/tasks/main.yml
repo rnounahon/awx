@@ -5,6 +5,7 @@
       - nfs-utils
       - nfs4-acl-tools
     state: present
+  ignore_error: true
 
 - name: Check if Share directory exists
   ansible.builtin.file:
