@@ -9,7 +9,7 @@
 
 - name: Check if Share directory exists
   ansible.builtin.file:
-    path: "{{ share }}"
+    path: "/{{ share }}"
     state: directory
     mode: "{{ permission }}"     
     owner: root
@@ -19,7 +19,7 @@
   ansible.builtin.lineinfile:
     path: "/etc/exports"
     state: present
-    line: '{{ share }} {{ options }}'
+    line: '/{{ share }} {{ options }}'
   notify: Restart NFS server
 
 - name: export the share
