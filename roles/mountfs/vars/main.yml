@@ -1,4 +1,4 @@
 ---
 # vars file for mountfs
-uri: '"{{ nfs_server }}""{{ share }}"'
+uri: '"{{ nfs_server }}:""/{{ share }}"'
 mountpoint: "{{ mountpoint }}"
