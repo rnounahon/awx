@@ -7,7 +7,7 @@
 
 - name: check if mount point exist
   ansible.builtin.file:
-    path: "{{ mountpoint }}"
+    path: "/{{ mountpoint }}"
     state: directory
     mode: '0775'
     owner: root
@@ -16,7 +16,7 @@
 - name: mount the network share
   ansible.posix.mount:
     src: "{{ uri }}"
-    path: "{{ mountpoint }}"
+    path: "/{{ mountpoint }}"
     fstype: nfs
     opts: rw,sync,hard
     state: mounted
