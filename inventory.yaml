@@ -9,6 +9,8 @@ all:
       ansible_host: 172.25.138.129
     awx-client4:
       ansible_host: 172.31.46.131
+      ansible_connection: winrm
+      ansible_winrm_port: 5985
 centos:
   hosts:
     awx-client2
