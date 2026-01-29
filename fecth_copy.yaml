@@ -1,6 +1,6 @@
 ---
 - name: Fetch and Copy File between Hosts
-  hosts: all
+  hosts: linux
   gather_facts: no
   tasks:
     - name : get date timestamp
