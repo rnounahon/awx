@@ -1,8 +1,9 @@
 ---
 - name: Fetch and Copy File between Hosts
   hosts: linux
-  gather_facts: no
+  gather_facts: yes
   tasks:
+
     - name : get date timestamp
       command: date +%Y%m%d
       register: datetime
@@ -10,8 +11,8 @@
     - name: Fetch the file from the awx-client1 to master
       run_once: yes
       fetch: src=/tmp/FILE_TEST_{{ datetime.stdout }} dest=buffer/ flat=yes
-      when: "{{ ansible_hostname == 'awx-client1' }}"
+      when: "{{ inventory_hostname == 'awx-client1' }}"
 
     - name: Copy the file from master to awx-client2
       copy: src=buffer/FILE_TEST_{{ datetime.stdout }} dest=/tmp/
-      when: "{{ ansible_hostname == 'awx-client2' }}"
+      when: "{{ inventory_hostname == 'awx-client2' }}"
