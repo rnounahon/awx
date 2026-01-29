@@ -2,9 +2,9 @@
 all:
   hosts:
     awx-client1:
-      ansible_host: 172.19.165.78
+      ansible_host: 172.29.204.105
     awx-client2:
-      ansible_host: 172.25.130.128
+      ansible_host: 172.29.193.123
     awx-client3:
       ansible_host: 172.25.138.129
     awx-client4:
