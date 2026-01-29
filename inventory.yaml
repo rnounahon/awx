@@ -25,6 +25,6 @@ windows:
     awx-client4
 linux:
   hosts:
-    awx-client1
-    awx-client2
-    awx-client3
+    awx-client1:
+    awx-client2:
+    awx-client3:
