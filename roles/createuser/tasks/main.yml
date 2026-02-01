@@ -1,0 +1,14 @@
+---
+- name: create on the nodes
+  ansible.builtin.user:
+    name: "{{ username }}"
+    state: "{{ user_state }}"
+    remove: yes
+    shell: /bin/bash
+    append: yes
+       
+- name: customize user sehel
+  ansible.builtin.template:
+    src: templates/bashrc.j2
+    dest: "~{{ username }}/.bashrc"
+  when: user_state == "present"
