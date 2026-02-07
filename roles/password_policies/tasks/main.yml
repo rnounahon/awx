@@ -1,0 +1,47 @@
+---
+# tasks file for password_policies
+- name: Enable authselect - Check Current authselect Profile
+  ansible.builtin.command:
+    cmd: authselect current
+  register: result_authselect_current
+  changed_when: false
+  failed_when: false
+      
+      
+- name: Enable authselect - Try to Select an authselect Profile
+  ansible.builtin.command:
+    cmd: authselect select "{{ var_authselect_profile }}"
+  register: result_authselect_select
+  changed_when: result_authselect_select.rc == 0
+  failed_when: false
+  when: result_authselect_current.rc != 0
+
+
+- name: Enable authselect - Verify If pam Has Been Altered
+  ansible.builtin.command:
+    cmd: rpm -qV pam
+  register: result_altered_authselect
+  changed_when: false
+  failed_when: false
+  when:
+  - result_authselect_select is not skipped
+  - result_authselect_select.rc != 0
+
+
+- name: Enable authselect - Informative Message Based on authselect Integrity Check
+  ansible.builtin.assert:
+    that:
+    - result_authselect_current.rc == 0 or result_altered_authselect is skipped or
+      result_altered_authselect.rc == 0
+    fail_msg:
+    - authselect is not used but files from the 'pam' package have been altered, so
+      the authselect configuration won't be forced.
+
+
+- name: Enable authselect - Force authselect Profile Selection
+  ansible.builtin.command:
+    cmd: authselect select --force "{{ var_authselect_profile }}"
+  when:
+  - result_authselect_current.rc != 0
+  - result_authselect_select.rc != 0
+  - result_altered_authselect.rc == 0

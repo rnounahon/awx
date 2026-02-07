@@ -2,11 +2,11 @@
 all:
   hosts:
     awx-client1:
-      ansible_host: 172.29.204.105
+      ansible_host: 172.31.250.192
     awx-client2:
-      ansible_host: 172.29.193.123
+      ansible_host: 172.31.248.111
     awx-client3:
-      ansible_host: 172.25.138.129
+      ansible_host: 172.31.242.58
     awx-client4:
       ansible_host: 172.31.46.131
       ansible_connection: winrm
