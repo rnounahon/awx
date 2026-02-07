@@ -59,5 +59,3 @@ var_selinux_state: !!str enforcing
 var_polyinstantiation_enabled: !!str true
 var_postfix_root_mail_alias: !!str change_me@localhost
 var_postfix_inet_interfaces: !!str loopback-only
----
-# vars file for password_policies
