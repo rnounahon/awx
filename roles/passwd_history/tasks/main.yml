@@ -1,7 +1,5 @@
 ---
 # tasks file for passwd_history
----
-# tasks file for password_policies
 - name: Enable authselect - Check Current authselect Profile
   ansible.builtin.command:
     cmd: authselect current
