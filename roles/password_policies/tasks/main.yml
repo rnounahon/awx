@@ -46,7 +46,7 @@
   - result_authselect_select.rc != 0
   - result_altered_authselect.rc == 0
 
-  - name: Gather the package facts
+- name: Gather the package facts
   package_facts:
     manager: auto
 
