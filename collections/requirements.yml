@@ -2,6 +2,5 @@ collections:
   - name: awx.awx
   - name: amazon.aws
   - name: ansible.posix
-  - name: redhat.rhel_system_roles  
   - name: google.cloud
   - name: cisco.ios
