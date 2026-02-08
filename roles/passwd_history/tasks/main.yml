@@ -130,7 +130,7 @@
   when:
   - '"pam" in ansible_facts.packages'
   - result_authselect_present.stat.exists
-  - result_authselect_available_features.stdout is search("with-pwhistory")
+  - result_authselect_available_features.stdout is not search("with-pwhistory")
 
   - name: Limit Password Reuse - Enable pam_pwhistory.so in appropriate PAM files
   block:
