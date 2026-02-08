@@ -4,4 +4,4 @@
   become: true
   roles:
     - passwd_history
-    - passwd_enforce
+    - lock_account
