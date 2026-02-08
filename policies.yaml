@@ -3,4 +3,5 @@
   hosts: redhat
   become: true
   roles:
-    - password_policies
+    - passwd_history
+    - passwd_enforce
