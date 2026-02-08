@@ -271,8 +271,7 @@
     when:
     - result_authselect_present.stat.exists
 
-    - name: Limit Password Reuse - Define a fact for control already filtered in case
-    filters are used
+- name: Limit Password Reuse - Define a fact for control already filtered in case filters are used
   ansible.builtin.set_fact:
     pam_module_control: requisite
 
@@ -532,7 +531,7 @@
   when:
   - '"pam" in ansible_facts.packages'
   - result_pwhistory_conf_check.stat.exists
-  
+
 
 - name: Limit Password Reuse - pam_pwhistory.so parameters are configured in PAM files
   block:
