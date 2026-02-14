@@ -1,5 +1,9 @@
 ---
 # tasks file for passwd_enforce
+- name: Gather the package facts
+  package_facts:
+    manager: auto
+
 - name: Enable authselect - Check Current authselect Profile
   ansible.builtin.command:
     cmd: authselect current
@@ -44,8 +48,7 @@
   - result_authselect_select.rc != 0
   - result_altered_authselect.rc == 0
 
-- name: Ensure PAM Enforces Password Requirements - Minimum Digit Characters - Ensure
-    PAM variable dcredit is set accordingly
+- name: Ensure PAM Enforces Password Requirements - Minimum Digit Characters - Ensure PAM variable dcredit is set accordingly
   ansible.builtin.lineinfile:
     create: true
     dest: /etc/security/pwquality.conf
@@ -57,8 +60,7 @@
   package_facts:
     manager: auto
 
-- name: Ensure PAM Enforces Password Requirements - Minimum Lowercase Characters -
-    Ensure PAM variable lcredit is set accordingly
+- name: Ensure PAM Enforces Password Requirements - Minimum Lowercase Characters - Ensure PAM variable lcredit is set accordingly
   ansible.builtin.lineinfile:
     create: true
     dest: /etc/security/pwquality.conf
@@ -70,8 +72,7 @@
   package_facts:
     manager: auto
 
-- name: Ensure PAM Enforces Password Requirements - Minimum Different Categories -
-    Ensure PAM variable minclass is set accordingly
+- name: Ensure PAM Enforces Password Requirements - Minimum Different Categories - Ensure PAM variable minclass is set accordingly
   ansible.builtin.lineinfile:
     create: true
     dest: /etc/security/pwquality.conf
@@ -83,8 +84,7 @@
   package_facts:
     manager: auto
 
-- name: Ensure PAM Enforces Password Requirements - Minimum Length - Ensure PAM variable
-    minlen is set accordingly
+- name: Ensure PAM Enforces Password Requirements - Minimum Length - Ensure PAM variable minlen is set accordingly
   ansible.builtin.lineinfile:
     create: true
     dest: /etc/security/pwquality.conf
@@ -96,8 +96,7 @@
   package_facts:
     manager: auto
 
-- name: Ensure PAM Enforces Password Requirements - Minimum Special Characters - Ensure
-    PAM variable ocredit is set accordingly
+- name: Ensure PAM Enforces Password Requirements - Minimum Special Characters - Ensure PAM variable ocredit is set accordingly
   ansible.builtin.lineinfile:
     create: true
     dest: /etc/security/pwquality.conf
@@ -117,19 +116,16 @@
     line: retry = {{ var_password_pam_retry }}
   when: '"pam" in ansible_facts.packages'
 
-- name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted
-    Per-Session - Check if /etc/pam.d/password-auth file is present
+- name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Check if /etc/pam.d/password-auth file is present
   ansible.builtin.stat:
     path: /etc/pam.d/password-auth
   register: result_pam_file_present
   when: '"pam" in ansible_facts.packages'
 
-- name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted
-    Per-Session - Check the proper remediation for the system
+- name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Check the proper remediation for the system
   block:
 
-  - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts
-      Permitted Per-Session - Define the PAM file to be edited as a local fact
+  - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Define the PAM file to be edited as a local fact
     ansible.builtin.set_fact:
       pam_file_path: /etc/pam.d/password-auth
 
