@@ -1,0 +1,29 @@
+---
+- name: Perform Windows updates
+  hosts: Windows
+  gather_facts: false
+  vars_prompt:
+    - name "ansible_ssh_pass"
+      pompt: Windows password
+      private: true
+
+  tasks:
+    - name: Update the Windows server
+      ansible.windows.win_updates:
+        category_names:
+        #  - SecurityUpdates
+          - CriticalUpdates
+        #  - DefiitionUpdate
+        #  - UpdatesRollups
+        #  - FeaturesPacks
+        #  - ServicesPacks
+        #  - UpdatesRollups
+        #  - Updates
+        state: searched
+          reboot : yes
+          reboot_timeout: 3600
+      register: update_output
+
+    - name: Print out the results
+      ansible.builtin.debug:
+        var: update_output
