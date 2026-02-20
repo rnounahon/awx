@@ -8,7 +8,7 @@ all:
     awx-client3:
       ansible_host: 172.31.190.126
     awx-client4:
-      ansible_host: 172.31.46.131
+      ansible_host: 172.22.76.132
 centos:
   hosts:
     awx-client2
