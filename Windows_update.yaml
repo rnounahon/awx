@@ -3,10 +3,10 @@
   hosts: windows
   gather_facts: false
   become: true
-  vars_prompt:
-    - name: "ansible_ssh_pass"
-      prompt: Windows password
-      private: true
+  #vars_prompt:
+  #  - name: "ansible_ssh_pass"
+  #    prompt: Windows password
+  #    private: true
 
   tasks:
     - name: Update the Windows server
