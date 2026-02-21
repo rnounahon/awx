@@ -20,7 +20,7 @@
         #  - ServicesPacks
         #  - UpdatesRollups
         #  - Updates
-        state: searched
+        state: installed
         reboot: yes
         reboot_timeout: 3600
       register: update_output
