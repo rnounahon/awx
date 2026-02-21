@@ -1,6 +1,6 @@
 ---
 - name: Perform Windows updates
-  hosts: Windows
+  hosts: windows
   gather_facts: false
   become: true
   vars_prompt:
