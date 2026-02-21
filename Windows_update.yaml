@@ -4,7 +4,7 @@
   gather_facts: false
   vars_prompt:
     - name: "ansible_ssh_pass"
-      pompt: Windows password
+      prompt: Windows password
       private: true
 
   tasks:
