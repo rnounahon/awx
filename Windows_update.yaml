@@ -2,6 +2,7 @@
 - name: Perform Windows updates
   hosts: Windows
   gather_facts: false
+  become: true
   vars_prompt:
     - name: "ansible_ssh_pass"
       prompt: Windows password
