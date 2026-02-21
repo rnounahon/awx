@@ -3,7 +3,7 @@
   hosts: Windows
   gather_facts: false
   vars_prompt:
-    - name "ansible_ssh_pass"
+    - name: "ansible_ssh_pass"
       pompt: Windows password
       private: true
 
@@ -20,8 +20,8 @@
         #  - UpdatesRollups
         #  - Updates
         state: searched
-          reboot : yes
-          reboot_timeout: 3600
+        reboot: yes
+        reboot_timeout: 3600
       register: update_output
 
     - name: Print out the results
