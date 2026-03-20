@@ -4,3 +4,4 @@ collections:
   - name: ansible.posix
   - name: google.cloud
   - name: cisco.ios
+  - name: theforeman.foreman
