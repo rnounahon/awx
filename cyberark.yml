@@ -1,0 +1,38 @@
+fields:
+  - id: app_id
+    type: string
+    label: CyberArk AppID
+
+  - id: safe
+    type: string
+    label: Safe
+
+  - id: object
+    type: string
+    label: Object Name
+
+  - id: ccp_url
+    type: string
+    label: CCP URL
+
+required:
+  - app_id
+  - safe
+  - object
+  - ccp_url
+
+
+env:
+  CYBERARK_PASSWORD: >-
+    {{ lookup(
+        'url',
+        ccp_url +
+        '/AIMWebService/api/Accounts'
+        + '?AppID=' + app_id
+        + '&Safe=' + safe
+        + '&Object=' + object,
+        split_lines=False
+      )
+      | from_json
+      | json_query('Content')
+    }}
