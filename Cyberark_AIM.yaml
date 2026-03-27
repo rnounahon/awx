@@ -1,0 +1,49 @@
+---
+- name: test pulling a per-device password from Cyberark AIM
+  hosts: '{{ target_host | default("localhost") }}'
+  gather_facts: false
+  vars:
+    ca_base_url: "https://
+  
+
+  tasks:
+    - name: credential retrieval basic
+      cyberark.pas.cyberark_credential:
+        api_base_url: "{{ ca_base_url }}"
+        app_id: "testappid"
+        query: "safe=AWX_SYS-A-FR-UNX-S-PRD;UserName=SVC-AWX-LIN;Object={{ inventory_hostname | upper }}"
+        validate_certs: no
+      register: ca_password
+      no_log: true
+  
+    - name: set ansible_password for each host
+      set_fact:
+        ansible_user: admin
+        ansible_password: "{{ ca_password.result.content }}"
+      no_log: true
+
+    - name: show os version
+      ansible.bultin.command: cat /etc/redhat-release
+
+
+---
+- name: test pulling a per-device password from Cyberark AIM
+  hosts: '{{ target_host | default("localhost") }}'
+  vars:
+    sw1: lab
+    sw2: lab
+    sw3: lab
+
+  tasks:
+    - name: set ansible_password for each host
+      set_fact:
+        ansibe_password: "{{ lookup('cyberarkpassword', cyquery) }}"
+        ansible_user: SVC-AWX-LIN
+      vars:
+        cyquery:
+          appid: "testappid"
+          query: "safe=AWX_SYS-A-FR-UNX-S-PRD;Object={{ inventory_hostname | upper }}"
+          output: "Password"
+
+    - name: show os version
+      ansible.bultin.command: cat /etc/redhat-release
