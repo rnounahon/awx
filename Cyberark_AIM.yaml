@@ -61,3 +61,63 @@
 
     - name: show os version
       ansible.bultin.command: cat /etc/redhat-release
+
+---
+
+---
+- name: CyberArk + AWX multi-host password retrieval
+  hosts: all
+  gather_facts: false
+
+  vars:
+    cyberark:
+      api_base_url: "https://<cyberark-url>"
+      app_id: "testappid"
+      safe: "AWX_SYS-A-FR-UNX-S-PRD"
+      username: "SVC-AWX-LIN"
+
+    # 🔐 récupération dynamique du password par host
+    ansible_user: admin
+    ansible_password: >-
+      {{
+        lookup('cyberark.pas.cyberarkpassword',
+        'api_base_url=' + cyberark.api_base_url +
+        ' app_id=' + cyberark.app_id +
+        ' query=safe=' + cyberark.safe +
+        ';UserName=' + cyberark.username +
+        ';Object=' + (inventory_hostname | upper) +
+        ' connection_timeout=60')
+      }}
+
+    ansible_connection: ssh
+    ansible_ssh_common_args: >-
+      -o StrictHostKeyChecking=no
+      -o UserKnownHostsFile=/dev/null
+      -o PreferredAuthentications=password
+
+  tasks:
+
+    - name: Wait for SSH to be ready (handles rotation timing)
+      wait_for_connection:
+        timeout: 60
+        sleep: 5
+      register: connection_status
+      retries: 3
+      delay: 10
+      until: connection_status is succeeded
+
+    - name: Debug whoami
+      ansible.builtin.command: whoami
+      register: whoami_out
+
+    - name: Show result
+      debug:
+        msg: "Connected as {{ whoami_out.stdout }} on {{ inventory_hostname }}"
+
+    - name: Get OS version
+      ansible.builtin.command: cat /etc/redhat-release
+      register: os_out
+
+    - name: Display OS
+      debug:
+        var: os_out.stdout
