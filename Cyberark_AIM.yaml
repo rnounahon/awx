@@ -13,24 +13,29 @@
         app_id: "testappid"
         query: "safe=AWX_SYS-A-FR-UNX-S-PRD;UserName=SVC-AWX-LIN;Object={{ inventory_hostname | upper }}"
         validate_certs: no
-      delegate_to: localhost
+        fail_request_on_password_change: true
+        connection_timeout: 60
       run_once: false
       register: ca_password
-      no_log: true
+
+    - name: set ansible_password for each host
+      set_fact:
+        ansible_user: admin
+        ansible_password: "{{ ca_password.result.content }}"
+        ansible_connection: ssh
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+        ansibble_ssh_common_args: '-o UserKnownHostsFile=/dev/null'
+        ansible_ssh_common_args: '-o PasswordAuthentication=yes'
+        ansible_ssh_common_args: '-o PreferedAuthentications=password'
 
     - name: set connection vars dynamically
       add_host:
         name: "{{ inventory_hostname }}"
         ansible_user: admin
         ansible_password: "{{ ca_password.result.content }}"
-      no_log: true      
+        ansible_ssh_common_args: '-o PasswordAuthentication=yes'
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
   
-    - name: set ansible_password for each host
-      set_fact:
-        ansible_user: admin
-        ansible_password: "{{ ca_password.result.content }}"
-      no_log: true
-
     - name: show os version
       ansible.bultin.command: cat /etc/redhat-release
 
