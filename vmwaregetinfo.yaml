@@ -1,0 +1,21 @@
+---
+- name: info vm demo
+  hosts: localhost
+  gather_facts: no
+  collections:
+    - community.vmware
+  pre_tasks:
+    - include_vars: vars.yaml
+  tasks:
+    - name: get info vm demo
+      community.vmware.vmware_guest_info:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        name: demo
+      register: vm_info
+
+    - name: show info vm demo
+      ansible.builtin.debug:
+        var: vm_info
