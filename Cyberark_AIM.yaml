@@ -1,112 +1,35 @@
 ---
 - name: test pulling a per-device password from Cyberark AIM
-  hosts: '{{ target_host | default("localhost") }}'
+  hosts: '{{ inventory_hostname | default("localhost") }}'
   gather_facts: false
+
   vars:
-    ca_base_url: "https://
+    ca_base_url: "https://url-cyberark-aim"
   
 
   tasks:
-    - name: credential retrieval basic
+    - name: Retrieve password from Cyberark
       cyberark.pas.cyberark_credential:
         api_base_url: "{{ ca_base_url }}"
-        app_id: "testappid"
-        query: "safe=AWX_SYS-A-FR-UNX-S-PRD;UserName=SVC-AWX-LIN;Object={{ inventory_hostname | upper }}"
+        app_id: "API-TEST-AWX"
+        query: "safe=CYBERARK_SAFE_NALE;UserName=USER_NAME;Object={{ inventory_hostname.split('.')[0] | upper }}-USER_NAME"
         validate_certs: no
         fail_request_on_password_change: true
         connection_timeout: 60
       run_once: false
       register: ca_password
 
-    - name: set ansible_password for each host
-      set_fact:
-        ansible_user: admin
-        ansible_password: "{{ ca_password.result.content }}"
-        ansible_connection: ssh
-        ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
-        ansibble_ssh_common_args: '-o UserKnownHostsFile=/dev/null'
-        ansible_ssh_common_args: '-o PasswordAuthentication=yes'
-        ansible_ssh_common_args: '-o PreferedAuthentications=password'
-
+    - name: show retrieved password
+      ansible.builtin.debug:
+        var: ca_password.result.content  
+      
     - name: set connection vars dynamically
-      add_host:
-        name: "{{ inventory_hostname }}"
-        ansible_user: admin
-        ansible_password: "{{ ca_password.result.content }}"
-        ansible_ssh_common_args: '-o PasswordAuthentication=yes'
-        ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+      ansible.builtin.set_fact:
+         ansible_user: USER_NAME
+         ansible_password: "{{ ca_password.result.content }}"
+         ansible_port: 22
   
-    - name: show os version
-      ansible.bultin.command: cat /etc/redhat-release
-
-
----
-- name: test pulling a per-device password from Cyberark AIM
-  hosts: '{{ target_host | default("localhost") }}'
-  vars:
-    sw1: lab
-    sw2: lab
-    sw3: lab
-
-  tasks:
-    - name: set ansible_password for each host
-      set_fact:
-        ansibe_password: "{{ lookup('cyberarkpassword', cyquery) }}"
-        ansible_user: SVC-AWX-LIN
-      vars:
-        cyquery:
-          appid: "testappid"
-          query: "safe=AWX_SYS-A-FR-UNX-S-PRD;Object={{ inventory_hostname | upper }}"
-          output: "Password"
-
-    - name: show os version
-      ansible.bultin.command: cat /etc/redhat-release
-
----
-
----
-- name: CyberArk + AWX multi-host password retrieval
-  hosts: all
-  gather_facts: false
-
-  vars:
-    cyberark:
-      api_base_url: "https://<cyberark-url>"
-      app_id: "testappid"
-      safe: "AWX_SYS-A-FR-UNX-S-PRD"
-      username: "SVC-AWX-LIN"
-
-    # 🔐 récupération dynamique du password par host
-    ansible_user: admin
-    ansible_password: >-
-      {{
-        lookup('cyberark.pas.cyberarkpassword',
-        'api_base_url=' + cyberark.api_base_url +
-        ' app_id=' + cyberark.app_id +
-        ' query=safe=' + cyberark.safe +
-        ';UserName=' + cyberark.username +
-        ';Object=' + (inventory_hostname | upper) +
-        ' connection_timeout=60')
-      }}
-
-    ansible_connection: ssh
-    ansible_ssh_common_args: >-
-      -o StrictHostKeyChecking=no
-      -o UserKnownHostsFile=/dev/null
-      -o PreferredAuthentications=password
-
-  tasks:
-
-    - name: Wait for SSH to be ready (handles rotation timing)
-      wait_for_connection:
-        timeout: 60
-        sleep: 5
-      register: connection_status
-      retries: 3
-      delay: 10
-      until: connection_status is succeeded
-
-    - name: Debug whoami
+    - name: show connected user
       ansible.builtin.command: whoami
       register: whoami_out
 
