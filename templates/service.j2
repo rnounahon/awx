@@ -1,0 +1,33 @@
+[Unit]
+Description= {{ service_description }}
+Documentation=https://docs.bmc.com/
+After=network-online.target remote-fs.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=root
+Group=root
+
+# Démarrage
+ExecStart=/controlm/ag_ctrlm/ctm/scripts/start-ag -u ag_ctrlm -p ALL
+
+# Arrêt (à adapter selon le script disponible)
+ExecStop=/controlm/ag_ctrlm/ctm/scripts/shut-ag -u ag_ctrlm -p ALL
+
+# Vérifie que l'agent est bien lancé
+ExecStartPost=/usr/bin/bash -c 'for i in {1..30}; do pidof p_ctmag >/dev/null && exit 0; sleep 2; done; exit 1'
+
+# Vérifie que l'agent est arrêté
+ExecStopPost=/usr/bin/bash -c 'for i in {1..30}; do pidof p_ctmag >/dev/null || exit 0; sleep 2; done; exit 1'
+
+PIDFile=/run/controlm.pid
+
+RemainAfterExit=yes
+Restart=no
+
+TimeoutStartSec=300
+TimeoutStopSec=300
+
+[Install]
+WantedBy=multi-user.target
