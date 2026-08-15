@@ -1,0 +1,45 @@
+---
+# tasks file for quays_install
+- name: Check Qualys version
+  ansible.builtin.shell: "rpm -q --qf '%{VERSION}' qualys-cloud-agent"
+  register: rpm_version
+  changed_when: false
+  failed_when: false
+
+- name: Show installed version
+  ansible.builtin.debug:
+    msg: "{{ rpm_version.stdout | default('Qualys non installé') }}"
+
+- name: Show Qualys version that you want to install
+  ansible.builtin.debug:
+    msg: "{{ qualys_version }}"
+
+- name: Install only if installed package is lower than the new package
+  when:
+    - rpm_version.rc != 0 or rpm_version.stdout is version(qualys_version, '<')
+  block:
+
+    - name: Remove installed Qualys
+      ansible.builtin.dnf:
+        name: qualys-cloud-agent
+        state: absent
+
+    - name: Install Qualys package
+      ansible.builtin.dnf:
+        name: "/chemin/qualys-cloud-agent-{{ qualys_version }}.x86_64.rpm"
+        state: present
+
+    - name: Execute the script configuration
+      ansible.builtin.shell: >
+        /usr/local/qualys/cloud-agent/bin/qualys-cloud-agent.sh
+        ActivationID=48fc5ai-5b8c-49id
+
+    - name: Create file configuration
+      ansible.builtin.lineinfile:
+        path: /etc/sysconfig/qualys-cloud-agent
+        line: "https_proxy=http://proxy.zinssou.com:8080"
+        create: true
+        mode: "0644"
+        owner: root
+        group: root
+      notify: Restart Qualys service
