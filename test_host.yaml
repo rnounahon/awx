@@ -1,0 +1,19 @@
+--- 
+- name: Tester la disponibilité et afficher la version OS 
+  hosts: all 
+  gather_facts: true 
+
+  tasks: 
+
+    - name: Tester la disponibilité de l'hôte 
+      ansible.builtin.ping: 
+      register: ping_result 
+
+    - name: Afficher les informations de l'hôte 
+      ansible.builtin.debug:
+        msg: 
+          - "Hôte : {{ inventory_hostname }}" 
+          - "Statut : {{ 'OK' if ping_result.ping == 'pong' else 'KO' }}" 
+          - "OS : {{ ansible_facts.distribution }}" 
+          - "Version OS : {{ ansible_facts.distribution_version }}" 
+          - "Kernel : {{ ansible_facts.kernel }}"
