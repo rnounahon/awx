@@ -19,8 +19,8 @@ debian:
     awx-client1
 redhat:
   hosts:
-    awx-client3
-    awx-client5
+    awx-client3:
+    awx-client5:
 windows:
   hosts:
     awx-client4
