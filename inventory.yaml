@@ -6,9 +6,11 @@ all:
     awx-client2:
       ansible_host: 172.18.95.151
     awx-client3:
-      ansible_host: 172.21.37.109
+      ansible_host: 172.31.188.202
     awx-client4:
       ansible_host: 172.22.76.132
+    awx-client5:
+      ansible_host: 172.31.190.124
 centos:
   hosts:
     awx-client2
@@ -18,6 +20,7 @@ debian:
 redhat:
   hosts:
     awx-client3
+    awx-client5
 windows:
   hosts:
     awx-client4
@@ -26,6 +29,7 @@ linux:
     awx-client1:
     awx-client2:
     awx-client3:
+    awx-client5:
 windows:
   vars:
     ansible_connection: winrm
