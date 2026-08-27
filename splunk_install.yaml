@@ -1,0 +1,37 @@
+---
+# tasks file for splunkforwarder
+
+- name: Check installed Splunk Forwarder version
+  ansible.builtin.shell:
+    cmd: "rpm -q --qf '%{VERSION}' splunkforwarder"
+  register: splunk_installed_version
+  changed_when: false
+  failed_when: false
+
+- name: Show installed Splunk Forwarder version
+  ansible.builtin.debug:
+    msg: >-
+      {{
+        splunk_installed_version.stdout
+        if splunk_installed_version.rc == 0
+        else 'splunkforwarder is not installed'
+      }}
+
+- name: Show Splunk Forwarder version to install
+  ansible.builtin.debug:
+    msg: "{{ splunk_version }}"
+
+- name: Install Splunk Forwarder if not installed
+  ansible.builtin.dnf:
+    name: "/chemin/splunkforwarder-{{ splunk_version }}.x86_64.rpm"
+    state: present
+  when:
+    - splunk_installed_version.rc != 0
+
+- name: Upgrade Splunk Forwarder if installed version is lower
+  ansible.builtin.command:
+    cmd: "rpm -U /chemin/splunkforwarder-{{ splunk_version }}.x86_64.rpm"
+  when:
+    - splunk_installed_version.rc == 0
+    - splunk_installed_version.stdout is version(splunk_version, '<')
+Le comportement
