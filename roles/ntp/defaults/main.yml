@@ -1,0 +1,9 @@
+---
+# Liste des serveurs NTP
+ntp_servers:
+  - 172.30.110.128
+  - 172.30.110.129
+
+
+# Fichier de configuration
+ntp_config_file: /etc/chrony.conf

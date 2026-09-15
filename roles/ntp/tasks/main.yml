@@ -1,0 +1,29 @@
+---
+- name: Installer chrony
+  package:
+    name: chrony
+    state: present
+
+- name: Activer et démarrer chronyd
+  service:
+    name: chronyd
+    state: started
+    enabled: yes
+
+- name: Déployer la configuration chrony.conf
+  template:
+    src: chrony.conf.j2
+    dest: "{{ ntp_config_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart chronyd
+
+- name: Ouvrir le port NTP dans firewalld (optionnel)
+  firewalld:
+    service: ntp
+    permanent: yes
+    state: enabled
+    immediate: yes
+  when: ansible_facts.services["firewalld.service"] is defined
+
