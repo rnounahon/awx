@@ -1,6 +1,6 @@
 ---
 - name: test pulling a per-device password from Cyberark AIM
-  hosts: '{{ inventory_hostname | default("localhost") }}'
+  hosts: "{{ target_hosts.split(',') }}"
   gather_facts: false
 
   vars:
@@ -16,31 +16,13 @@
         validate_certs: no
         fail_request_on_password_change: true
         connection_timeout: 60
-      run_once: false
       register: ca_password
+      no_log: true
+      delegate_to: localhost
 
-    - name: show retrieved password
-      ansible.builtin.debug:
-        var: ca_password.result.content  
-      
     - name: set connection vars dynamically
       ansible.builtin.set_fact:
          ansible_user: USER_NAME
          ansible_password: "{{ ca_password.result.content }}"
-         ansible_port: 22
-  
-    - name: show connected user
-      ansible.builtin.command: whoami
-      register: whoami_out
-
-    - name: Show result
-      debug:
-        msg: "Connected as {{ whoami_out.stdout }} on {{ inventory_hostname }}"
-
-    - name: Get OS version
-      ansible.builtin.command: cat /etc/redhat-release
-      register: os_out
-
-    - name: Display OS
-      debug:
-        var: os_out.stdout
+         ansible_become_password: "{{ ca_password.result.content }}"
+         ansible_port: 2222
