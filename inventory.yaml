@@ -6,11 +6,11 @@ all:
     awx-client2:
       ansible_host: 172.18.95.151
     awx-client3:
-      ansible_host: 172.31.188.202
+      ansible_host: 172.19.173.105
     awx-client4:
       ansible_host: 172.22.76.132
     awx-client5:
-      ansible_host: 172.28.85.163
+      ansible_host: 172.19.170.115
 centos:
   hosts:
     awx-client2
