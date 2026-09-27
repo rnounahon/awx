@@ -41,4 +41,3 @@ windows:
     ansible_connection: winrm
     ansible_winrm_port: 5985
     ansible_become_method: runas
-    
