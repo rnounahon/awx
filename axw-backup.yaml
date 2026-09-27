@@ -1,0 +1,6 @@
+---
+- name: Backup AWX
+  hosts: "{{ target_hosts }}"
+  gather_facts: false
+  roles:
+    - backup
