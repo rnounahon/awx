@@ -1,0 +1,206 @@
+---
+- name: Verification conformité agents sécurité
+  hosts: linux_servers
+  become: true
+
+  vars:
+    smtp_host: smtp.monentreprise.local
+    smtp_port: 25
+    mail_to:
+      - admin@mondomaine.fr
+    mail_from: ansible@mondomaine.fr
+
+  tasks:
+
+    ####################################################################
+    # TRELLIX
+    ####################################################################
+
+    - name: Vérifier service Trellix
+      shell: systemctl is-active mfetpd 2>/dev/null || echo Not Installed
+      register: trellix_service
+      changed_when: false
+
+    - name: Version Trellix
+      shell: rpm -qa | grep -i endpoint-security | head -1
+      register: trellix_version
+      changed_when: false
+      failed_when: false
+
+    ####################################################################
+    # DYNATRACE
+    ####################################################################
+
+    - name: Vérifier service Dynatrace
+      shell: systemctl is-active oneagent 2>/dev/null || echo Not Installed
+      register: dynatrace_service
+      changed_when: false
+
+    - name: Version Dynatrace
+      shell: /opt/dynatrace/oneagent/agent/tools/oneagentctl --version 2>/dev/null | head -1
+      register: dynatrace_version
+      changed_when: false
+      failed_when: false
+
+    ####################################################################
+    # QUALYS
+    ####################################################################
+
+    - name: Vérifier service Qualys
+      shell: systemctl is-active qualys-cloud-agent 2>/dev/null || echo Not Installed
+      register: qualys_service
+      changed_when: false
+
+    - name: Version Qualys
+      shell: rpm -qa | grep -i qualys | head -1
+      register: qualys_version
+      changed_when: false
+      failed_when: false
+
+    ####################################################################
+    # TANIUM
+    ####################################################################
+
+    - name: Vérifier service Tanium
+      shell: systemctl is-active taniumclient 2>/dev/null || echo Not Installed
+      register: tanium_service
+      changed_when: false
+
+    - name: Version Tanium
+      shell: rpm -qa | grep -i tanium | head -1
+      register: tanium_version
+      changed_when: false
+      failed_when: false
+
+    ####################################################################
+    # SPLUNK
+    ####################################################################
+
+    - name: Vérifier service Splunk
+      shell: systemctl is-active splunkforwarder 2>/dev/null || echo Not Installed
+      register: splunk_service
+      changed_when: false
+
+    - name: Version Splunk
+      shell: /opt/splunkforwarder/bin/splunk version 2>/dev/null | head -1
+      register: splunk_version
+      changed_when: false
+      failed_when: false
+
+    ####################################################################
+    # RAPPORT HTML
+    ####################################################################
+
+    - name: Générer le rapport HTML
+      set_fact:
+        rapport_html: |
+          <html>
+          <head>
+          <style>
+          body { font-family: Arial, Helvetica, sans-serif; }
+          table {
+              border-collapse: collapse;
+              width: 80%;
+          }
+          th {
+              background-color: #005a9c;
+              color: white;
+              padding: 8px;
+          }
+          td {
+              border: 1px solid #ddd;
+              padding: 8px;
+          }
+          .ok {
+              background-color: #d4edda;
+          }
+          .ko {
+              background-color: #f8d7da;
+          }
+          </style>
+          </head>
+          <body>
+
+          <h2>Validation conformité serveur</h2>
+
+          <table>
+            <tr>
+              <th>Produit</th>
+              <th>Etat Service</th>
+              <th>Version</th>
+            </tr>
+
+            <tr>
+              <td>Trellix</td>
+              <td>{{ trellix_service.stdout }}</td>
+              <td>{{ trellix_version.stdout | default('N/A') }}</td>
+            </tr>
+
+            <tr>
+              <td>Dynatrace</td>
+              <td>{{ dynatrace_service.stdout }}</td>
+              <td>{{ dynatrace_version.stdout | default('N/A') }}</td>
+            </tr>
+
+            <tr>
+              <td>Qualys</td>
+              <td>{{ qualys_service.stdout }}</td>
+              <td>{{ qualys_version.stdout | default('N/A') }}</td>
+            </tr>
+
+            <tr>
+              <td>Tanium</td>
+              <td>{{ tanium_service.stdout }}</td>
+              <td>{{ tanium_version.stdout | default('N/A') }}</td>
+            </tr>
+
+            <tr>
+              <td>Splunk</td>
+              <td>{{ splunk_service.stdout }}</td>
+              <td>{{ splunk_version.stdout | default('N/A') }}</td>
+            </tr>
+
+          </table>
+
+          <br>
+
+          <table>
+            <tr>
+              <th>Hostname</th>
+              <td>{{ ansible_hostname }}</td>
+            </tr>
+            <tr>
+              <th>OS</th>
+              <td>{{ ansible_distribution }} {{ ansible_distribution_version }}</td>
+            </tr>
+            <tr>
+              <th>Date</th>
+              <td>{{ ansible_date_time.date }} {{ ansible_date_time.time }}</td>
+            </tr>
+          </table>
+
+          </body>
+          </html>
+
+    ####################################################################
+    # SAUVEGARDE RAPPORT
+    ####################################################################
+
+    - name: Sauvegarder le rapport
+      copy:
+        content: "{{ rapport_html }}"
+        dest: "/tmp/conformite_{{ inventory_hostname }}.html"
+
+    ####################################################################
+    # ENVOI MAIL
+    ####################################################################
+
+    - name: Envoyer le mail
+      mail:
+        host: "{{ smtp_host }}"
+        port: "{{ smtp_port }}"
+        from: "{{ mail_from }}"
+        to: "{{ mail_to | join(',') }}"
+        subject: "Rapport conformité {{ inventory_hostname }}"
+        subtype: html
+        body: "{{ rapport_html }}"
