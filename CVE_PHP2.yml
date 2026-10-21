@@ -1,0 +1,193 @@
+
+---
+- name: Audit PHP CVE-2026-109618 et CVE-2026-109619
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    php_service_candidates:
+      - php-fpm
+
+  tasks:
+    - name: Initialiser les variables d'audit
+      ansible.builtin.set_fact:
+        php_installed: false
+        php_version: "N/A"
+        php_cli_path: "N/A"
+        php_rpm_packages: []
+        php_services_found: []
+        php_service_status: []
+        cve_2026_109618: "UNKNOWN"
+        cve_2026_109619: "UNKNOWN"
+
+    - name: Rechercher le binaire PHP CLI
+      ansible.builtin.command:
+        argv:
+          - /bin/sh
+          - -c
+          - "command -v php"
+      register: php_path
+      changed_when: false
+      failed_when: false
+
+    - name: Lire la version PHP CLI
+      ansible.builtin.command:
+        argv:
+          - "{{ php_path.stdout }}"
+          - "-r"
+          - "echo PHP_VERSION;"
+      register: php_version_cmd
+      changed_when: false
+      failed_when: false
+      when: php_path.rc == 0
+
+    - name: Enregistrer les informations PHP CLI
+      ansible.builtin.set_fact:
+        php_installed: true
+        php_cli_path: "{{ php_path.stdout }}"
+        php_version: "{{ php_version_cmd.stdout | default('UNKNOWN', true) }}"
+      when:
+        - php_path.rc == 0
+        - php_version_cmd.rc | default(1) == 0
+
+    - name: Inventorier les paquets RPM PHP
+      ansible.builtin.command:
+        argv:
+          - rpm
+          - -qa
+          - --qf
+          - "%{NAME}|%{VERSION}-%{RELEASE}.%{ARCH}\n"
+          - "php*"
+      register: php_rpm
+      changed_when: false
+      failed_when: false
+
+    - name: Enregistrer les paquets RPM
+      ansible.builtin.set_fact:
+        php_rpm_packages: "{{ php_rpm.stdout_lines | default([]) }}"
+        php_rpm_installed: >-
+          {{
+            (php_rpm.stdout_lines | default([])
+             | select('match', '^php')
+             | list | length) > 0
+          }}
+
+    - name: Déterminer si PHP est présent
+      ansible.builtin.set_fact:
+        php_installed: >-
+          {{ (php_installed | bool) or (php_rpm_installed | bool) }}
+
+    - name: Vérifier l'existence des services candidats
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - show
+          - --property=LoadState
+          - --value
+          - "{{ item }}"
+      loop: "{{ php_service_candidates }}"
+      register: php_load_states
+      changed_when: false
+      failed_when: false
+
+    - name: Construire la liste des services existants
+      ansible.builtin.set_fact:
+        php_services_found: >-
+          {{
+            php_load_states.results
+            | selectattr('stdout', 'equalto', 'loaded')
+            | map(attribute='item')
+            | list
+          }}
+
+    - name: Contrôler l'état des services PHP
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - is-active
+          - "{{ item }}"
+      loop: "{{ php_services_found }}"
+      register: php_service_checks
+      changed_when: false
+      failed_when: false
+
+    - name: Construire le détail des services
+      ansible.builtin.set_fact:
+        php_service_status: >-
+          {{
+            (php_service_checks.results | default([]))
+            | map(attribute='item')
+            | zip(
+                (php_service_checks.results | default([]))
+                | map(attribute='stdout')
+              )
+            | list
+          }}
+
+    - name: Préparer l'enregistrement CVE
+      ansible.builtin.set_fact:
+        cve_evaluation_note: >-
+          UNKNOWN : les règles officielles de versions affectées et
+          corrigées ne sont pas encore intégrées et validées.
+        audit_date: "{{ now(utc=true, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
+
+    - name: Afficher le résumé de l'hôte
+      ansible.builtin.debug:
+        msg:
+          hote: "{{ inventory_hostname }}"
+          adresse: "{{ ansible_host | default(inventory_hostname) }}"
+          distribution: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+          php_installe: "{{ php_installed }}"
+          php_cli_version: "{{ php_version }}"
+          paquets_rpm: "{{ php_rpm_packages }}"
+          services: "{{ php_service_status }}"
+          cve_2026_109618: "{{ cve_2026_109618 }}"
+          cve_2026_109619: "{{ cve_2026_109619 }}"
+
+- name: Générer le rapport CSV consolidé
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    rapport_csv: "./rapports/php_cve_audit.csv"
+    groupes_audites:
+      - all
+
+  tasks:
+    - name: Créer le répertoire du rapport
+      ansible.builtin.file:
+        path: "./rapports"
+        state: directory
+        mode: "0750"
+
+    - name: Initialiser le fichier CSV avec son en-tête
+      ansible.builtin.copy:
+        dest: "{{ rapport_csv }}"
+        mode: "0640"
+        content: >-
+          hote;adresse_ip;distribution;php_installe;php_version;paquets_rpm;
+          services_php;CVE-2026-109618;CVE-2026-109619;date_audit
+          {{ '\n' }}
+
+    - name: Ajouter les résultats de chaque serveur
+      ansible.builtin.lineinfile:
+        path: "{{ rapport_csv }}"
+        insertafter: EOF
+        line: >-
+          "{{ item }}";
+          "{{ hostvars[item].ansible_host |
+              default(hostvars[item].ansible_default_ipv4.address |
+              default('N/A')) }}";
+          "{{ hostvars[item].ansible_distribution |
+              default('UNKNOWN') }} {{ hostvars[item].ansible_distribution_version |
+              default('UNKNOWN') }}";
+          "{{ hostvars[item].php_installed | default('UNKNOWN') }}";
+          "{{ hostvars[item].php_version | default('N/A') }}";
+          "{{ (hostvars[item].php_rpm_packages | default([])) | join(', ') }}";
+          "{{ (hostvars[item].php_service_status | default([])) | string }}";
+          "{{ hostvars[item].cve_2026_109618 | default('UNKNOWN') }}";
+          "{{ hostvars[item].cve_2026_109619 | default('UNKNOWN') }}";
+          "{{ hostvars[item].audit_date | default('N/A') }}"
+      loop: "{{ groups['all'] }}"
+      when: hostvars[item].php_installed is defined
