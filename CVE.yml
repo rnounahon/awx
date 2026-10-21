@@ -1,0 +1,49 @@
+---
+- name: Audit PHP CVE-2026-109618/109619
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+
+    - name: Vérifier si PHP est installé
+      shell: "php -v | head -1"
+      register: php_version_cmd
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Extraire la version PHP
+      set_fact:
+        php_installed: "{{ php_version_cmd.rc == 0 }}"
+        php_version: "{{ php_version_cmd.stdout | regex_search('[0-9]+\\.[0-9]+\\.[0-9]+') }}"
+      when: php_version_cmd.rc == 0
+
+    - name: Recherche des services PHP-FPM
+      shell: |
+        systemctl list-units --type=service --all | grep php.*fpm | awk '{print $1}'
+      register: php_services
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Vérifier état des services PHP
+      shell: |
+        systemctl is-active {{ item }}
+      loop: "{{ php_services.stdout_lines }}"
+      register: php_service_status
+      when: php_services.stdout_lines | length > 0
+      changed_when: false
+
+    - name: Déterminer statut CVE
+      set_fact:
+        cve_status: >-
+          {% if php_installed %}
+          POTENTIELLEMENT_AFFECTE
+          {% else %}
+          NON_CONCERNE
+          {% endif %}
+
+    - name: Créer rapport CSV local
+      delegate_to: localhost
+      lineinfile:
+        path: /tmp/php_cve_audit.csv
+        create: yes
+        line: "{{ inventory_hostname }};{{ ansible_default_ipv4.address | default('N/A') }};{{ php_installed | default(false) }};{{ php_version | default('N/A') }};{{ php_services.stdout_lines | join(',') | default('N/A') }};{{ cve_status }}"
