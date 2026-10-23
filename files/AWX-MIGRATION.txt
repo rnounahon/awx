@@ -1,0 +1,183 @@
+########################## AWX MIGRATION ###############################
+
+1) Sauvegarder la configuration :
+
+./kubectl get awx -n awx awx -o yaml > awx-cr.yaml
+
+./kubectl get secret awx-secret-key -n awx -o yaml > awx-secret-key.yaml
+
+./kubectl get secret awx-postgres-configuration -n awx -o yaml > awx-postgres-configuration.yaml
+
+
+2)  Sauvegarder la base de donnée
+
+./kubectl exec -it -n awx awx-postgres-15-0 -- bash
+
+pg_dump -U awx -d awx -Fc -f /tmp/awx.dump
+
+kubectl cp awx/awx-postgres-15-0:/tmp/awx.dump ./awx.dump
+
+                         ou 
+
+
+kubectl exec -it -n awx awx-postgres-15-0 -- psql -U awx -l
+
+kubectl exec -n awx awx-postgres-15-0 -- pg_dumpall -U awx > awx_backup.sql
+                                     
+	
+
+
+3) Crée le répertoire persistant.
+
+sudo mkdir -p /awx/postgres
+sudo chown -R 1000:1000 /awx  ou sudo chmod 777 /awx/postgres
+   
+
+4) Vérifier le montage du local path.
+
+a) supression du cluster et recreation  :
+
+#kind-awx.yaml
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+
+nodes:
+- role: control-plane
+  extraMounts:
+  - hostPath: /awx
+    containerPath: /awx
+
+- role: worker
+  extraMounts:
+  - hostPath: /awx
+    containerPath: /awx
+
+$kind delete cluster
+
+$./kind create cluster --config kind-awx.yaml
+
+vérfier :
+
+$podman exec -it kind-control-plane ls /awx
+
+$podman exec kind-worker ls /awx
+
+
+
+5) kubectl create ns awx
+
+
+
+6) Creation du storage class
+
+#storageclass-awx-local-storage.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: awx-local-storage
+provisioner: rancher.io/local-path
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+
+
+$kubectl apply -f storageclass-awx-local-storage.yaml
+
+
+
+7) Creation du volume persistant:
+
+#awx-postgres-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: awx-postgres-pv
+spec:
+  storageClassName: awx-local-storage
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /awx/postgres
+
+$kubectl apply -f awx-postgres-pv.yaml
+
+
+8) Création du PVC
+
+a)fichier yaml du PVC
+# pvc-postgres.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: awx-postgres-pvc
+  namespace: awx
+spec:
+  storageClassName: awx-local-storage
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+
+$kubectl apply -f pvc-postgres.yaml
+
+##########
+
+kubectl apply -f awx-secret-key.yaml
+
+kubectl apply -f awx-postgres-configuration.yaml
+
+###########
+
+
+b)controler 
+$kubectl get pv,pvc
+
+
+9) modifier le custom ressources AWX
+
+a) modifier le fichier awx-cr.yaml
+
+spec:
+  postgres_storage_class: awx-local-storage
+  postgres_storage_requirements:
+    requests:
+      storage: 20Gi
+
+ou 
+
+spec:
+  postgres_storage_class: awx-local-storage
+
+
+b) appliquer la nouvelle modification
+./kubectl apply -k .
+
+
+10) Restaurer les données
+
+a) copier les dump  dans le container db
+
+./kubectl cp awx_backup.sql awx/awx-postgres-15-0:/tmp/
+
+
+b) restaurer la base
+kubectl exec -it -n awx awx-postgres-15-0 -- psql -U awx -f /tmp/awx_backup.sql
+
+
+
+
+11) Vérification finale 
+$ podman exec -it kind-control-plane bash
+
+$ ls -lah /awx/postgres
+
+
+kubectl get awx -A
+kubectl get pvc -A
+kubectl get pv -A
+kubectl get pods -A | grep postgres
