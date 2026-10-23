@@ -1,0 +1,275 @@
+---
+- name: Verification conformité agents sécurité
+  hosts: linux_servers
+  become: true
+  gather_facts: true
+
+  vars:
+    smtp_host: smtp.monentreprise.local
+    smtp_port: 25
+    mail_to:
+      - admin@mondomaine.fr
+    mail_from: ansible@mondomaine.fr
+
+  tasks:
+
+    ####################################################################
+    # TRELLIX
+    ####################################################################
+
+    - name: Vérifier service Trellix
+      shell: systemctl is-active mfetpd 2>/dev/null || echo "Not Installed"
+      register: trellix_service
+      changed_when: false
+      failed_when: false
+
+    - name: Version Trellix
+      shell: /opt/McAfee/agent/bin/cmdagent -i 2>/dev/null | grep '^Version' | awk '{print $2}'
+      register: trellix_version
+      changed_when: false
+      failed_when: false
+
+    ####################################################################
+    # DYNATRACE
+    ####################################################################
+
+    - name: Vérifier service Dynatrace
+      shell: systemctl is-active oneagent 2>/dev/null || echo "Not Installed"
+      register: dynatrace_service
+      changed_when: false
+      failed_when: false
+
+    - name: Version Dynatrace
+      shell: /opt/dynatrace/oneagent/agent/tools/oneagentctl --version 2>/dev/null | head -1
+      register: dynatrace_version
+      changed_when: false
+      failed_when: false
+
+    ####################################################################
+    # QUALYS
+    ####################################################################
+
+    - name: Vérifier service Qualys
+      shell: systemctl is-active qualys-cloud-agent 2>/dev/null || echo "Not Installed"
+      register: qualys_service
+      changed_when: false
+      failed_when: false
+
+    - name: Version Qualys
+      shell: rpm -q --qf '%{VERSION}-%{RELEASE}' qualys-cloud-agent 2>/dev/null
+      register: qualys_version
+      changed_when: false
+      failed_when: false
+
+    ####################################################################
+    # TANIUM
+    ####################################################################
+
+    - name: Vérifier service Tanium
+      shell: systemctl is-active taniumclient 2>/dev/null || echo "Not Installed"
+      register: tanium_service
+      changed_when: false
+      failed_when: false
+
+    - name: Version Tanium
+      shell: rpm -q --qf '%{VERSION}-%{RELEASE}' taniumclient 2>/dev/null
+      register: tanium_version
+      changed_when: false
+      failed_when: false
+
+    ####################################################################
+    # SPLUNK
+    ####################################################################
+
+    - name: Vérifier service Splunk
+      shell: systemctl is-active splunkforwarder 2>/dev/null || echo "Not Installed"
+      register: splunk_service
+      changed_when: false
+      failed_when: false
+
+    - name: Version Splunk
+      shell: rpm -q --qf '%{VERSION}-%{RELEASE}' splunkforwarder 2>/dev/null
+      register: splunk_version
+      changed_when: false
+      failed_when: false
+
+    ####################################################################
+    # RAPPORT HTML
+    ####################################################################
+
+    - name: Générer le rapport HTML
+      ansible.builtin.set_fact:
+        rapport_html: |
+          <!DOCTYPE html>
+          <html lang="fr">
+          <head>
+          <meta charset="UTF-8">
+          <style>
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+                color: #333333;
+                margin: 20px;
+            }
+
+            h2 {
+                color: #005a9c;
+            }
+
+            table {
+                border-collapse: collapse;
+                width: 80%;
+                margin-bottom: 20px;
+            }
+
+            th {
+                background-color: #005a9c;
+                color: white;
+                padding: 10px;
+                border: 1px solid #dddddd;
+                text-align: left;
+            }
+
+            td {
+                border: 1px solid #dddddd;
+                padding: 10px;
+            }
+
+            .active {
+                background-color: #d4edda;
+                color: #155724;
+                font-weight: bold;
+            }
+
+            .inactive {
+                background-color: #f8d7da;
+                color: #721c24;
+                font-weight: bold;
+            }
+
+            .info {
+                background-color: #eaf2f8;
+                font-weight: bold;
+            }
+          </style>
+          </head>
+
+          <body>
+
+          <h2>Rapport de conformité des agents de sécurité</h2>
+
+          <p>
+            <strong>Serveur :</strong> {{ ansible_hostname }}<br>
+            <strong>Système :</strong> {{ ansible_distribution }} {{ ansible_distribution_version }}<br>
+            <strong>Date :</strong> {{ ansible_date_time.date }} {{ ansible_date_time.time }}
+          </p>
+
+          <table>
+            <tr>
+              <th>Produit</th>
+              <th>État du service</th>
+              <th>Version installée</th>
+            </tr>
+
+            <tr>
+              <td>Trellix</td>
+              <td class="{{ 'active' if trellix_service.stdout | trim == 'active' else 'inactive' }}">
+                {{ trellix_service.stdout | trim }}
+              </td>
+              <td>
+                {{ trellix_version.stdout | default('N/A', true) | trim or 'N/A' }}
+              </td>
+            </tr>
+
+            <tr>
+              <td>Dynatrace</td>
+              <td class="{{ 'active' if dynatrace_service.stdout | trim == 'active' else 'inactive' }}">
+                {{ dynatrace_service.stdout | trim }}
+              </td>
+              <td>
+                {{ dynatrace_version.stdout | default('N/A', true) | trim or 'N/A' }}
+              </td>
+            </tr>
+
+            <tr>
+              <td>Qualys</td>
+              <td class="{{ 'active' if qualys_service.stdout | trim == 'active' else 'inactive' }}">
+                {{ qualys_service.stdout | trim }}
+              </td>
+              <td>
+                {{ qualys_version.stdout | default('N/A', true) | trim or 'N/A' }}
+              </td>
+            </tr>
+
+            <tr>
+              <td>Tanium</td>
+              <td class="{{ 'active' if tanium_service.stdout | trim == 'active' else 'inactive' }}">
+                {{ tanium_service.stdout | trim }}
+              </td>
+              <td>
+                {{ tanium_version.stdout | default('N/A', true) | trim or 'N/A' }}
+              </td>
+            </tr>
+
+            <tr>
+              <td>Splunk</td>
+              <td class="{{ 'active' if splunk_service.stdout | trim == 'active' else 'inactive' }}">
+                {{ splunk_service.stdout | trim }}
+              </td>
+              <td>
+                {{ splunk_version.stdout | default('N/A', true) | trim or 'N/A' }}
+              </td>
+            </tr>
+          </table>
+
+          <table>
+            <tr>
+              <th>Informations système</th>
+              <th>Valeur</th>
+            </tr>
+            <tr>
+              <td>Hostname</td>
+              <td class="info">{{ ansible_hostname }}</td>
+            </tr>
+            <tr>
+              <td>Système d'exploitation</td>
+              <td class="info">{{ ansible_distribution }} {{ ansible_distribution_version }}</td>
+            </tr>
+            <tr>
+              <td>Date du contrôle</td>
+              <td class="info">{{ ansible_date_time.date }} {{ ansible_date_time.time }}</td>
+            </tr>
+          </table>
+
+          <p>
+            <span style="color:#155724;font-weight:bold;">Vert : service actif</span><br>
+            <span style="color:#721c24;font-weight:bold;">Rouge : service inactif ou non installé</span>
+          </p>
+
+          </body>
+          </html>
+
+    ####################################################################
+    # SAUVEGARDE DU RAPPORT HTML
+    ####################################################################
+
+    - name: Sauvegarder le rapport HTML sur le serveur cible
+      ansible.builtin.copy:
+        content: "{{ rapport_html }}"
+        dest: "/tmp/conformite_{{ inventory_hostname }}.html"
+        mode: "0644"
+
+    ####################################################################
+    # ENVOI DU RAPPORT PAR MAIL
+    ####################################################################
+
+    - name: Envoyer le rapport de conformité par e-mail
+      ansible.builtin.mail:
+        host: "{{ smtp_host }}"
+        port: "{{ smtp_port }}"
+        from: "{{ mail_from }}"
+        to: "{{ mail_to | join(',') }}"
+        subject: "Rapport conformité {{ inventory_hostname }}"
+        subtype: html
+        body: "{{ rapport_html }}"
+      delegate_to: localhost
+      become: false

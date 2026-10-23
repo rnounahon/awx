@@ -22,10 +22,9 @@
       changed_when: false
 
     - name: Version Trellix
-      shell: rpm -qa | grep -i endpoint-security | head -1
+      shell: /opt/McAfee/agent/bin/cmdagent -i | grep ^Version | awk '{print $2}' 2>/dev/null
       register: trellix_version
       changed_when: false
-      failed_when: false
 
     ####################################################################
     # DYNATRACE
@@ -52,7 +51,7 @@
       changed_when: false
 
     - name: Version Qualys
-      shell: rpm -qa | grep -i qualys | head -1
+      shell: rpm -q --qf '%{VERSION}' qualys-cloud-agent 2>/dev/null
       register: qualys_version
       changed_when: false
       failed_when: false
@@ -67,7 +66,7 @@
       changed_when: false
 
     - name: Version Tanium
-      shell: rpm -qa | grep -i tanium | head -1
+      shell: rpm -q --qf '%{VERSION}' taniumclient 2>/dev/null
       register: tanium_version
       changed_when: false
       failed_when: false
@@ -82,7 +81,7 @@
       changed_when: false
 
     - name: Version Splunk
-      shell: /opt/splunkforwarder/bin/splunk version 2>/dev/null | head -1
+      shell: rpm -q --qf '%{VERSION}' splunkforwarder 2>/dev/null
       register: splunk_version
       changed_when: false
       failed_when: false
@@ -116,6 +115,17 @@
           }
           .ko {
               background-color: #f8d7da;
+          }    
+          .active {
+              background-color: #d4edda;
+              color: #155724;
+              font-weight: bold;
+          }
+          .inactive {
+              background-color: #f8d7da;
+              color: #721c24;
+              font-weight: bold;
+          }
           }
           </style>
           </head>
@@ -132,31 +142,41 @@
 
             <tr>
               <td>Trellix</td>
-              <td>{{ trellix_service.stdout }}</td>
+              <td class="{{ 'active' if trellix_service.stdout | trim == 'active' else 'inactive' }}">
+                  {{ trellix_service.stdout | trim }}
+              </td>
               <td>{{ trellix_version.stdout | default('N/A') }}</td>
             </tr>
 
             <tr>
               <td>Dynatrace</td>
-              <td>{{ dynatrace_service.stdout }}</td>
+              <td class="{{ 'active' if dynatrace_service.stdout | trim == 'active' else 'inactive' }}">
+                  {{ dynatrace_service.stdout | trim }}
+              </td>
               <td>{{ dynatrace_version.stdout | default('N/A') }}</td>
             </tr>
 
             <tr>
               <td>Qualys</td>
-              <td>{{ qualys_service.stdout }}</td>
+              <td class="{{ 'active' if qualys_service.stdout | trim == 'active' else 'inactive' }}">
+                  {{ qualys_service.stdout | trim }}
+              </td>
               <td>{{ qualys_version.stdout | default('N/A') }}</td>
             </tr>
 
             <tr>
               <td>Tanium</td>
-              <td>{{ tanium_service.stdout }}</td>
+              <td class="{{ 'active' if tanium_service.stdout | trim == 'active' else 'inactive' }}">
+                  {{ tanium_service.stdout | trim }}
+              </td>
               <td>{{ tanium_version.stdout | default('N/A') }}</td>
             </tr>
 
             <tr>
               <td>Splunk</td>
-              <td>{{ splunk_service.stdout }}</td>
+              <td class="{{ 'active' if splunk_service.stdout | trim == 'active' else 'inactive' }}">
+                  {{ splunk_service.stdout | trim }}
+              </td>
               <td>{{ splunk_version.stdout | default('N/A') }}</td>
             </tr>
 
