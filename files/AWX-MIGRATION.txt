@@ -231,3 +231,10 @@ spec:
   backup_pvc: awx-backup-pvc
   backup_pvc_namespace: awx
   backup_dir: /backups/REMPLACER_PAR_LE_REPERTOIRE_REEL
+
+
+
+
+
+
+echo "Hostname;IP;Firefox Installed;Firefox Version;Thunderbird Installed;Thunderbird Version;Brotli Installed;Brotli Version;NodeJS Installed;NodeJS Version" > reports/packages_audit.csv
