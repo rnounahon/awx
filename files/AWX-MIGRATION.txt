@@ -30,7 +30,7 @@ kubectl exec -n awx awx-postgres-15-0 -- pg_dumpall -U awx > awx_backup.sql
 3) Crée le répertoire persistant.
 
 sudo mkdir -p /awx/postgres
-sudo chown -R 1000:1000 /awx  ou sudo chmod 777 /awx/postgres
+sudo chown -R 1000:1000 /awx  ou sudo chmod 750 /awx/postgres
    
 
 4) Vérifier le montage du local path.
@@ -181,3 +181,53 @@ kubectl get awx -A
 kubectl get pvc -A
 kubectl get pv -A
 kubectl get pods -A | grep postgres
+
+
+
+#################################################################  BACKUP ######################################################
+je peux faire un pvc pour le backup 
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: awx-backup-pvc
+  namespace: awx
+spec:
+  storageClassName: awx-local
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+
+
+l'operateur BACKUP de AWX
+
+apiVersion: awx.ansible.com/v1beta1
+kind: AWXBackup
+metadata:
+  name: awxbackup-manual
+  namespace: awx
+spec:
+  deployment_name: awx
+  backup_pvc: awx-backup-pvc
+
+
+# pour vérifier le statut du backup
+kubectl get awxbackup awxbackup-manual -n awx -o jsonpath='{.status.backupDirectory}'
+
+kubectl get awxbackup awxbackup-manual -n awx -o jsonpath='{.status.backupClaim}'
+
+
+l'operateur de restauration
+
+apiVersion: awx.ansible.com/v1beta1
+kind: AWXRestore
+metadata:
+  name: awxrestore-manual
+  namespace: awx
+spec:
+  deployment_name: awx
+  backup_pvc: awx-backup-pvc
+  backup_pvc_namespace: awx
+  backup_dir: /backups/REMPLACER_PAR_LE_REPERTOIRE_REEL

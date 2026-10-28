@@ -1,0 +1,42 @@
+---
+- name: Verification des packages
+  hosts: all
+  gather_facts: false
+
+  vars:
+    packages_to_check:
+      - firefox
+      - thunderbird
+      - brotli
+      - nodejs
+
+  tasks:
+    - name: Recuperer les packages installes
+      package_facts:
+        manager: auto
+
+    - name: Construire les resultats
+      set_fact:
+        package_results: "{{ package_results | default([]) + [ {
+          'server': inventory_hostname,
+          'package': item,
+          'status': ('Installed' if item in ansible_facts.packages else 'Absent')
+        } ] }}"
+      loop: "{{ packages_to_check }}"
+
+- name: Generer le CSV
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Creer le rapport CSV
+      copy:
+        dest: package_report.csv
+        content: |
+          Serveur,Package,Statut
+          {% for host in groups['all'] %}
+          {% for result in hostvars[host].package_results %}
+          {{ result.server }},{{ result.package }},{{ result.status }}
+          {% endfor %}
+          {% endfor %}
+      run_once: true
