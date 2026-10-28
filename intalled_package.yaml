@@ -1,7 +1,7 @@
 ---
-- name: Verification des packages
+- name: Audit packages Firefox Thunderbird Brotli NodeJS
   hosts: all
-  gather_facts: false
+  gather_facts: true
 
   vars:
     packages_to_check:
@@ -11,32 +11,45 @@
       - nodejs
 
   tasks:
-    - name: Recuperer les packages installes
+
+    - name: Collect package facts
       package_facts:
         manager: auto
 
-    - name: Construire les resultats
+    - name: Vérifier les packages
       set_fact:
-        package_results: "{{ package_results | default([]) + [ {
-          'server': inventory_hostname,
-          'package': item,
-          'status': ('Installed' if item in ansible_facts.packages else 'Absent')
-        } ] }}"
+        audit_result: "{{ audit_result | default({}) | combine({
+          item: {
+            'installed': (item in ansible_facts.packages),
+            'version': (
+              ansible_facts.packages[item][0].version
+              if item in ansible_facts.packages
+              else 'N/A'
+            )
+          }
+        }) }}"
       loop: "{{ packages_to_check }}"
 
-- name: Generer le CSV
-  hosts: localhost
-  gather_facts: false
-
-  tasks:
-    - name: Creer le rapport CSV
-      copy:
-        dest: package_report.csv
-        content: |
-          Serveur,Package,Statut
-          {% for host in groups['all'] %}
-          {% for result in hostvars[host].package_results %}
-          {{ result.server }},{{ result.package }},{{ result.status }}
-          {% endfor %}
-          {% endfor %}
+    - name: Créer dossier rapports
+      delegate_to: localhost
       run_once: true
+      file:
+        path: ./reports
+        state: directory
+
+    - name: Générer rapport CSV
+      delegate_to: localhost
+      lineinfile:
+        path: ./reports/packages_audit.csv
+        create: yes
+        line: >-
+          {{ inventory_hostname }};
+          {{ ansible_default_ipv4.address | default('N/A') }};
+          {{ audit_result.firefox.installed }};
+          {{ audit_result.firefox.version }};
+          {{ audit_result.thunderbird.installed }};
+          {{ audit_result.thunderbird.version }};
+          {{ audit_result.brotli.installed }};
+          {{ audit_result.brotli.version }};
+          {{ audit_result.nodejs.installed }};
+          {{ audit_result.nodejs.version }}
