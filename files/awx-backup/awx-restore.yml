@@ -1,0 +1,10 @@
+apiVersion: awx.ansible.com/v1beta1
+kind: AWXRestore
+metadata:
+  name: awx-restore
+  namespace: awx
+
+spec:
+  deployment_name: awx
+  backup_pvc: awx-backup-postgres-pvc
+  backup_dir: /backups/tower-openshift-backup-2026-11-15-22:35:43
