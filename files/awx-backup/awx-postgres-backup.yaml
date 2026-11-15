@@ -1,0 +1,13 @@
+---
+apiVersion: awx.ansible.com/v1beta1
+kind: AWXBackup
+metadata:
+  name: awx-backup-prod
+  namespace: awx
+spec:
+  deployment_name: awx
+  backup_pvc: awx-backup-postgres-pvc
+  backup_storage_class: awx-local-storage
+  backup_storage_requirements: 10Gi
+  clean_backup_on_delete: false
+  no_log: true

@@ -1,0 +1,8 @@
+
+./kind export kubeconfig --name kind
+
+./kubectl get awxbackup -n awx -w
+
+./kubectl describe awxbackup awx-backup-prod -n awx
+
+0 2 * * 1 /awx/config/awx-backup.sh
