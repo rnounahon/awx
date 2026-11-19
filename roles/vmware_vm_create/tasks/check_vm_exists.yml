@@ -1,0 +1,15 @@
+---
+- community.vmware.vmware_guest_info:
+    hostname: "{{ target_vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: "{{ vcenter_validate_certs }}"
+    datacenter: "{{ target_datacenter }}"
+    name: "{{ vm_name }}"
+  delegate_to: localhost
+  register: vm_info
+  failed_when: false
+
+- fail:
+    msg: "La VM {{ vm_name }} existe déjà"
+  when: vm_info.instance is defined

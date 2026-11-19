@@ -1,0 +1,10 @@
+---
+- assert:
+    that:
+      - vm_name | length > 0
+      - vm_ip | length > 0
+      - vm_gateway | length > 0
+      - vm_network | length > 0
+      - vm_folder | length > 0
+      - vm_environment in ["PRD","DRP"]
+      - vm_os in ["rhel9","rhel10"]

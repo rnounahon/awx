@@ -1,0 +1,28 @@
+---
+- set_fact:
+    target_vcenter: "{{ vcenter_prd_host }}"
+    target_datacenter: "{{ vcenter_prd_datacenter }}"
+    target_cluster: "{{ vcenter_prd_cluster }}"
+    vm_dns_servers: "{{ prd_dns }}"
+  when: vm_environment == "PRD"
+- set_fact:
+    target_vcenter: "{{ vcenter_drp_host }}"
+    target_datacenter: "{{ vcenter_drp_datacenter }}"
+    target_cluster: "{{ vcenter_drp_cluster }}"
+    vm_dns_servers: "{{ drp_dns }}"
+  when: vm_environment == "DRP"
+- set_fact:
+    selected_template: "{{ lookup('vars', vm_os + '_' + vm_environment|lower + '_template') }}"
+  ignore_errors: true
+- set_fact:
+    selected_template: "{{ rhel9_prd_template }}"
+  when: vm_environment=="PRD" and vm_os=="rhel9"
+- set_fact:
+    selected_template: "{{ rhel10_prd_template }}"
+  when: vm_environment=="PRD" and vm_os=="rhel10"
+- set_fact:
+    selected_template: "{{ rhel9_drp_template }}"
+  when: vm_environment=="DRP" and vm_os=="rhel9"
+- set_fact:
+    selected_template: "{{ rhel10_drp_template }}"
+  when: vm_environment=="DRP" and vm_os=="rhel10"

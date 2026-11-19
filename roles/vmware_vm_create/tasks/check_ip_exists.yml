@@ -1,0 +1,15 @@
+---
+- community.vmware.vmware_vm_info:
+    hostname: "{{ target_vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: "{{ vcenter_validate_certs }}"
+  delegate_to: localhost
+  register: vm_inventory
+
+- set_fact:
+    used_ips: "{{ vm_inventory.virtual_machines | map(attribute='ip_address') | select('defined') | list }}"
+
+- fail:
+    msg: "L'adresse IP {{ vm_ip }} est déjà utilisée"
+  when: vm_ip in used_ips

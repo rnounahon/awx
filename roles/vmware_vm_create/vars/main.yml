@@ -1,0 +1,19 @@
+---
+vcenter_prd_host: frprd01
+vcenter_prd_datacenter: NAVAL
+vcenter_prd_cluster: "Pole Nord"
+vcenter_drp_host: frdrp02
+vcenter_drp_datacenter: "NAVAL-DRP"
+vcenter_drp_cluster: "Pole Sud"
+vcenter_validate_certs: false
+rhel9_drp_template: TEMPLATE-DRP-RH9
+rhel10_drp_template: TEMPLATE-DRP-RH10
+rhel9_prd_template: TEMPLATE-PRD-RH9
+rhel10_prd_template: TEMPLATE-PRD-RH10
+prd_dns:
+  - 10.10.10.10
+  - 10.10.10.11
+drp_dns:
+  - 10.20.20.10
+  - 10.20.20.11
+vm_domain: naval.local

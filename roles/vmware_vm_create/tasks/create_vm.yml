@@ -1,0 +1,31 @@
+---
+- community.vmware.vmware_guest:
+    hostname: "{{ target_vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: "{{ vcenter_validate_certs }}"
+    datacenter: "{{ target_datacenter }}"
+    cluster: "{{ target_cluster }}"
+    name: "{{ vm_name }}"
+    folder: "{{ vm_folder }}"
+    template: "{{ selected_template }}"
+    state: poweredon
+    hardware:
+      memory_mb: "{{ vm_memory }}"
+      num_cpus: "{{ vm_cpu }}"
+    disk:
+      - size_gb: "{{ vm_disk_gb }}"
+        datastore: "{{ vm_datastore }}"
+        type: thin
+    networks:
+      - name: "{{ vm_network }}"
+        type: static
+        ip: "{{ vm_ip }}"
+        netmask: "{{ vm_netmask }}"
+        gateway: "{{ vm_gateway }}"
+    customization:
+      hostname: "{{ vm_name }}"
+      domain: "{{ vm_domain }}"
+      dns_servers: "{{ vm_dns_servers }}"
+    wait_for_ip_address: true
+  delegate_to: localhost

@@ -1,0 +1,13 @@
+---
+vm_name: ""
+vm_environment: "PRD"
+vm_os: "rhel9"
+vm_ip: ""
+vm_netmask: "255.255.255.0"
+vm_gateway: ""
+vm_network: ""
+vm_cpu: 2
+vm_memory: 4096
+vm_disk_gb: 40
+vm_folder: ""
+vm_datastore: datastore1

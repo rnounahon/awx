@@ -1,0 +1,6 @@
+---
+- import_tasks: validate.yml
+- import_tasks: select_environment.yml
+- import_tasks: check_vm_exists.yml
+- import_tasks: check_ip_exists.yml
+- import_tasks: create_vm.yml

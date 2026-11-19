@@ -1,0 +1,6 @@
+---
+- name: Provision VMware
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - vmware_vm_create
